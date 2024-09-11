@@ -1,0 +1,42 @@
+@model Projekt_LiterallyCounting.Models.ChangeCredentialsViewModel
+
+<div align="center">
+<h2>Profilverwaltung</h2>
+
+<form asp-action="UpdateEmail" method="post">
+    <div>
+        <label>Derzeitige Email: @ViewBag.Email</label>
+    </div>
+    <br>
+    <div>
+        <input asp-for="ChCredEmail" placeholder="Neue Email"/>
+    </div>
+    <div>
+        <input asp-for="ChCredCurPassword" type="password" placeholder="Passwort"/>
+    </div>
+    <br>
+    <div>
+        <input type="submit" value="Email ändern" />
+    </div>
+</form>
+
+<br><br>
+
+<form asp-action="UpdatePassword" method="post">
+    <div>
+        <input asp-for="ChCredCurPassword" type="password" placeholder="Derzeitiges Passwort"/>
+    </div>
+    <div>
+        <input asp-for="ChCredPassword" type="password" placeholder="Neues Passwort"/>
+    </div>
+    <div>
+        <input asp-for="ChCredConfirmPassword" type="password" placeholder="Neues Passwort wiederholen"/>
+    </div>
+    <br>
+    <div>
+        <input type="submit" value="Passwort ändern" />
+    </div>
+</form>
+<br><br><br>
+<p>@ViewBag.Message</p>
+</div>

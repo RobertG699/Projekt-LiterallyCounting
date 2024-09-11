@@ -1,0 +1,39 @@
+@model IEnumerable<Projekt_LiterallyCounting.Models.UserViewModel>
+
+<h2>All Users</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Password</th>
+            <th>Is Admin</th>
+            <th>Blocked</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (UserViewModel user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.Password</td>
+                <td>@(user.IsAdmin ? "Yes" : "No")</td>
+                <td>@(user.Blocked ? "Yes" : "No")</td>
+                <td>
+                    <form asp-action="DeleteUser" asp-controller="Account" method="post">
+                        <input type="hidden" name="userEmail" value="@user.Email" />
+                        <input type="submit" value="Delete" class="btn btn-danger" />
+                    </form>
+                    @if (user.Blocked)
+                    {
+                        <form asp-action="UnblockUser" asp-controller="Account" method="post">
+                            <input type="hidden" name="userEmail" value="@user.Email" />
+                            <input type="submit" value="Unblock" class="btn btn-primary" />
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,32 @@
+@model IEnumerable<Projekt_LiterallyCounting.Models.WordViewModel>
+
+<h2>All Words</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Word</th>
+            <th>Position</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (WordViewModel word in Model)
+        {
+            <tr>
+                <td>@word.Word</td>
+                <td>@word.Pos</td>
+                <td>@word.Type</td>
+                <td>@word.Status</td>
+                <td>
+                    <form asp-action="DeleteWord" asp-controller="Account" method="post">
+                        <input type="hidden" name="wordToDelete" value="@word.Word" />
+                        <input type="submit" value="Delete" class="btn btn-danger" />
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

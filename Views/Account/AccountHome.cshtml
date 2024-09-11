@@ -1,0 +1,13 @@
+<h2>Welcome, @ViewBag.Email!</h2>
+
+<div>
+    <a asp-action="LoginRegister" asp-controller="Account" class="btn btn-primary">Neues Spiel</a>
+    <a asp-action="LoginRegister" asp-controller="Account" class="btn btn-primary">Highscores</a>
+    <a asp-action="AccountManagement" asp-controller="Account" class="btn btn-primary">Profilverwaltung</a>
+    @if (ViewBag.Admin){
+        <a asp-action="AdminPanel" asp-controller="Account" class="btn btn-primary">Admin Panel</a>
+    }
+    <form asp-action="Logout" method="post">
+        <input type="submit" value="Logout" />
+    </form>
+</div>

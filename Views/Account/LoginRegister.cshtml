@@ -1,0 +1,40 @@
+@model Projekt_LiterallyCounting.Models.LoginRegisterViewModel
+
+<div  align="center" vertical-align="middle">
+<h2>Login</h2>
+
+<form asp-action="Login" method="post">
+    <div>
+        <input asp-for="LoginEmail" placeholder="Email" />
+    </div>
+    <div>
+        <input asp-for="LoginPassword" type="password" placeholder="Passwort" />
+    </div>
+    <br/>
+    <div>
+        <input type="submit" value="Login" />
+    </div>
+</form>
+<br><br>
+<h3>ODER</h3>
+<br>
+<h2>Registrieren</h2>
+
+<form asp-action="Register" method="post">
+    <div>
+        <input asp-for="RegisterEmail" placeholder="Email" />
+    </div>
+    <div>
+        <input asp-for="RegisterPassword" type="password" placeholder="Passwort"/>
+    </div>
+    <div>
+        <input asp-for="RegisterConfirmPassword" type="password" placeholder="Passwort bestätigen"/>
+    </div>
+    <br/>
+    <div>
+        <input type="submit" value="Register" />
+    </div>
+</form>
+<br/><br/><br/>
+<p>@ViewBag.Message</p>
+</div>
