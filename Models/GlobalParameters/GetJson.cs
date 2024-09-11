@@ -40,7 +40,7 @@ namespace GlobalParameter
 
         public static List<Wraper>? GetListfromJson()
         {
-            //string fileName = "MvcLoginApp//Models//GlobalParameters//Json//dwds_lemmata_2024-08-28.json";C:\Users\tohmer\Documents\GitHub\Literally-Counting\MvcLoginApp\Models\GlobalParameters\Json\dwds_lemmata_2024-08-28.json
+            //string fileName = "Projekt_LiterallyCounting//Models//GlobalParameters//Json//dwds_lemmata_2024-08-28.json";C:\Users\tohmer\Documents\GitHub\Literally-Counting\Projekt_LiterallyCounting\Models\GlobalParameters\Json\dwds_lemmata_2024-08-28.json
             var path = Path.Combine(Directory.GetCurrentDirectory(),"Models","GlobalParameters","Json", "dwds_lemmata_2024-08-28.json");
             string jsonString = File.ReadAllText(path);
             //Console.WriteLine(jsonString);

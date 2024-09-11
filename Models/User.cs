@@ -1,4 +1,4 @@
-namespace MvcLoginApp.Models
+namespace Projekt_LiterallyCounting.Models
 {
     public class User
     {
