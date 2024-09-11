@@ -1,4 +1,4 @@
-namespace Projekt_LiterallyCounting.Models
+namespace MvcLoginApp.Models
 {
     public class WordViewModel
     {

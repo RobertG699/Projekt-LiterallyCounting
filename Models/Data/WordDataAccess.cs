@@ -1,5 +1,5 @@
 using System.Data.SQLite;
-using Projekt_LiterallyCounting.Models;
+using MvcLoginApp.Models;
 
 namespace MySQLiteApp
 {
@@ -42,9 +42,10 @@ namespace MySQLiteApp
             con.Open();
 
             using var cmd = new SQLiteCommand(con);
+
             cmd.CommandText = @"CREATE TABLE words (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            word TEXT NOT NULL,
+                            word TEXT NOT NULL UNIQUE,
                             pos TEXT NOT NULL,
                             type TEXT NOT NULL,
                             status BOOLEAN
@@ -53,6 +54,19 @@ namespace MySQLiteApp
 
             con.Close();
         }
+        public static void recreateWordTable()
+        {
+            SQLiteConnection con = createWordConnection();
+            con.Open();
+
+            using var cmd = new SQLiteCommand(con);
+            
+            cmd.CommandText = @"drop TABLE words";
+            cmd.ExecuteNonQuery();
+
+            con.Close();
+            createuserWordTable();
+        }
 
         public static void insertWord(string word, string pos, string type, bool? status = null)
         {
@@ -60,12 +74,20 @@ namespace MySQLiteApp
             con.Open();
 
             using var cmd = new SQLiteCommand(con);
+
             cmd.CommandText = $"INSERT INTO words(word, pos, type, status) VALUES(@Word, @Pos, @Type, @Status)";
             cmd.Parameters.AddWithValue("@Word", word);
             cmd.Parameters.AddWithValue("@Pos", pos);
             cmd.Parameters.AddWithValue("@Type", type);
             cmd.Parameters.AddWithValue("@Status", status);
-            cmd.ExecuteNonQuery();
+            try{
+                cmd.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+
+            }
+            
 
             con.Close();
         }
@@ -114,6 +136,18 @@ namespace MySQLiteApp
             using var cmd = new SQLiteCommand(con);
             cmd.CommandText = $"DELETE FROM words WHERE word = @Word";
             cmd.Parameters.AddWithValue("@Word", word);
+            using SQLiteDataReader rdr = cmd.ExecuteReader();
+
+            con.Close();
+        }
+
+        
+        public static void deletesmalWords(){
+            SQLiteConnection con = createWordConnection();
+            con.Open();
+
+            using var cmd = new SQLiteCommand(con);
+            cmd.CommandText = $"DELETE FROM words WHERE LENGTH(word) < 3";
             using SQLiteDataReader rdr = cmd.ExecuteReader();
 
             con.Close();
