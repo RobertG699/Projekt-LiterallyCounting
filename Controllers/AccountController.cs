@@ -297,5 +297,46 @@ namespace Projekt_LiterallyCounting.Controllers
 
             return RedirectToAction("AllUsers");
         }
+
+        [HttpGet]
+        public IActionResult Game()
+        {
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("LoginRegister");
+            }
+
+            string word = "empty";
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            
+            /* selecte word here
+            word = WordDataAccess.GetWord();*/
+
+            ViewBag.Word = word;
+
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult SendSolution()
+        {
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("LoginRegister");
+            }
+
+            string word = "empty";
+            string result = "";
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            
+            /* selecte word here
+            word = WordDataAccess.GetWord();*/
+
+            ViewBag.Word = word;
+
+            return RedirectToAction("Game");
+        }
     }
+
+    
 }
