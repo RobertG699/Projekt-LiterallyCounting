@@ -129,15 +129,10 @@ namespace MySQLiteApp
             {
                     return word.Distinct().Count();
             }
-            public void GetWinner()
+            public Player GetWinner()
             {
-                foreach (Player player in players)
-                {
-                    player.answerd = false;
-                    player.fails = 0;
-                }
-                currentRound++;
-
+                RefreshRoundScoreTable();
+                return players [0];
             }
             public Player[] RefreshRoundScoreTable()
             {
