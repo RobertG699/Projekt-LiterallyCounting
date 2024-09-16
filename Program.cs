@@ -41,6 +41,9 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+//test
+MySQLiteApp.WordDataAccess.readWords();
+//test ende
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=LoginRegister}/{id?}");
