@@ -1,6 +1,31 @@
-@model IEnumerable<Projekt_LiterallyCounting.Models.WordViewModel>
+@model Projekt_LiterallyCounting.Models.AllWordsViewModel
 
 <h2>All Words</h2>
+
+<form id="addWordForm" asp-action="AddWord" method="post">
+    <div>
+        <label asp-for="newWord.Word">Word:</label>
+        <input asp-for="newWord.Word" class="form-control" />
+    </div>
+    <div>
+        <label asp-for="newWord.Type">Typ:</label>
+        <input asp-for="newWord.Type" class="form-control" />
+    </div>
+    <div>
+        <label asp-for="newWord.Pos">Position:</label>
+        <input asp-for="newWord.Pos" class="form-control" />
+    </div>
+    <div>
+        <input type="submit" value="Wort Hinzufügen" />
+    </div>
+</form>
+
+<div>
+    @if (TempData["Message"] != null)
+    {
+        <p class="alert alert-success">@TempData["Message"]</p>
+    }
+</div>
 
 <table class="table table-striped">
     <thead>
@@ -13,7 +38,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (WordViewModel word in Model)
+        @foreach (WordViewModel word in Model.allWords)
         {
             <tr>
                 <td>@word.Word</td>

@@ -1,19 +1,13 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Authentication.Cookies;
-
+using MvcLoginApp.Hubs;
+using MvcLoginApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
-/*/ Add authentication services
-builder.Services.AddAuthentication("CookieAuth").AddCookie("CookieAuth", config =>
-    {
-        config.LoginPath = "/Account/LoginRegister";
-    });*/
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<WordService>();
 
 // Add authentication services
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -31,6 +25,8 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+app.MapHub<ChatHub>("/chathub"); // Configure the route for SignalR hub
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

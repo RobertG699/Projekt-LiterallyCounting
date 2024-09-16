@@ -122,7 +122,6 @@ namespace MySQLiteApp
         public static List<WordViewModel> readWords()
         {
             List<WordViewModel> words = new List<WordViewModel>();
-            string stt;
 
             SQLiteConnection con = createWordConnection();
             con.Open();
@@ -144,10 +143,10 @@ namespace MySQLiteApp
                 words.Add(word);
             }
 
-            foreach(WordViewModel word in words)
+            /*foreach(WordViewModel word in words)
             {
                 Console.WriteLine($"Word: {word.Word} | Position: {word.Pos} | Type: {word.Type} | Status: {word.Status}");
-            }
+            }*/
 
             con.Close();
             return words;

@@ -81,37 +81,35 @@ namespace MySQLiteApp
             con.Close();
         }
 
-        public static List<UserViewModel> readUsers()
+        public static List<PointsViewModel> readHighscores()
         {
-            List<UserViewModel> users = new List<UserViewModel>();
+            List<PointsViewModel> scores = new List<PointsViewModel>();
 
             SQLiteConnection con = createUserConnection();
             con.Open();
 
             using var cmd = new SQLiteCommand(con);
-            cmd.CommandText = "SELECT * FROM users";
+            cmd.CommandText = "SELECT * FROM highScore";
             using SQLiteDataReader rdr = cmd.ExecuteReader();
 
             while (rdr.Read())
             {
-                UserViewModel user = new UserViewModel
+                PointsViewModel score = new PointsViewModel
                 {
-                    Email = rdr["email"].ToString() == null ? "" : rdr["email"].ToString(),
-                    IsAdmin = Convert.ToBoolean(rdr["is_admin"]),
-                    Password = rdr["password"].ToString() == null ? "" : rdr["password"].ToString(),
-                    Blocked = Convert.ToBoolean(rdr["blocked"])
+                    email = rdr["email"].ToString() == null ? "" : rdr["email"].ToString(),
+                    points = Int32.Parse(rdr["points"].ToString())
                 };
 
-                users.Add(user);
+                scores.Add(score);
             }
 
-            foreach(UserViewModel user in users)
+            foreach(PointsViewModel score in scores)
             {
-                Console.WriteLine($"Mail: {user.Email} | Password: {user.Password} | Admin: {user.IsAdmin} | Blocked: {user.Blocked}");
+                Console.WriteLine($"Mail: {score.email} | Points: {score.points}");
             }
 
             con.Close();
-            return users;
+            return scores;
         }
     }
 }

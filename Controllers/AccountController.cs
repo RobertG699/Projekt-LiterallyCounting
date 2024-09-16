@@ -4,17 +4,31 @@ using MySQLiteApp;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 
 namespace Projekt_LiterallyCounting.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly PasswordHasher<LoginRegisterViewModel> _passwordHasher;
+
+        public AccountController()
+        {
+            _passwordHasher = new PasswordHasher<LoginRegisterViewModel>(); // Initializes the password hasher
+        }
+
         private async Task<bool> SignInUser(string email)
         {
+            if (User.Identity != null)
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, email),
-                new Claim("isAdmin", UserDataAccess.userIsAdmin(email).ToString())
+                new Claim("isAdmin", UserDataAccess.userIsAdmin(email).ToString()),
+                new Claim("isBlocked", UserDataAccess.userIsBlocked(email).ToString())
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -36,7 +50,7 @@ namespace Projekt_LiterallyCounting.Controllers
 
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
             var isAdminClaim = User.FindFirst("isAdmin")?.Value;
-            bool isAdmin = isAdminClaim != null && bool.Parse(isAdminClaim);
+            bool isAdmin = isAdminClaim != null ? bool.Parse(isAdminClaim) : false;
 
             ViewBag.Email = email;
             ViewBag.Admin = isAdmin;
@@ -47,14 +61,11 @@ namespace Projekt_LiterallyCounting.Controllers
         [HttpGet]
         public IActionResult LoginRegister()
         {
-            Console.WriteLine("Words:");
-            WordDataAccess.readWords();
-
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 var email = User.FindFirst(ClaimTypes.Email)?.Value;
                 var isAdminClaim = User.FindFirst("isAdmin")?.Value;
-                bool isAdmin = isAdminClaim != null && bool.Parse(isAdminClaim);
+                bool isAdmin = isAdminClaim != null ? bool.Parse(isAdminClaim) : false;
 
                 ViewBag.Email = email;
                 ViewBag.Admin = isAdmin;
@@ -63,15 +74,29 @@ namespace Projekt_LiterallyCounting.Controllers
             }
 
             /*UserDataAccess.createuserUserTable();
-            UserDataAccess.insertUser("mail1", "123", false, false);
-            UserDataAccess.insertUser("mail2", "123", false, true);
-            UserDataAccess.insertUser("mail3", "123", false, true);
-            UserDataAccess.insertUser("mailadmin", "123", true, true);
 
-            WordDataAccess.createuserWordTable();
+            LoginRegisterViewModel model = new LoginRegisterViewModel();
+            //string passwordHash = _passwordHasher.HashPassword(model, "123");
+
+            UserDataAccess.insertUser("mail1", "123", false, false);
+            UserDataAccess.insertUser("mail2", "123", false, false);
+            UserDataAccess.insertUser("mail3", "123", false, true);
+            UserDataAccess.insertUser("mail4", "123", false, true);
+            UserDataAccess.insertUser("mailadmin1", "123", true, false);
+            UserDataAccess.insertUser("mailadmin2", "123", true, false);
+
+            HighScoreDataAccess.createuserHighScoreTable();
+            HighScoreDataAccess.insertUser("mail1", 54);
+            HighScoreDataAccess.insertUser("mail2", 72);
+
+            /*WordDataAccess.createuserWordTable();
             WordDataAccess.insertWord("Baum", "pos1", "type1", null);
             WordDataAccess.insertWord("Haus", "pos2", "type3", true);
             WordDataAccess.insertWord("Lecker", "pos1", "type2", false);*/
+
+            /*UserDataAccess.readUsers();
+            HighScoreDataAccess.readHighscores();
+            WordDataAccess.readWords();*/
 
             return View();
         }
@@ -93,8 +118,9 @@ namespace Projekt_LiterallyCounting.Controllers
             }
             else
             {
+                //string passwordHash = _passwordHasher.HashPassword(model, model.RegisterPassword);
+
                 UserDataAccess.insertUser(model.RegisterEmail, model.RegisterPassword, false, true);
-                UserDataAccess.readUsers();
                 await SignInUser(model.RegisterEmail);
                 return RedirectToAction("AccountHome");
             }
@@ -105,6 +131,8 @@ namespace Projekt_LiterallyCounting.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginRegisterViewModel model)
         {
+            //string passwordHash = _passwordHasher.HashPassword(model, model.LoginPassword);
+
             if (UserDataAccess.validatedUser(model.LoginEmail, model.LoginPassword))
             {
                 await SignInUser(model.LoginEmail);
@@ -115,6 +143,48 @@ namespace Projekt_LiterallyCounting.Controllers
             UserDataAccess.readUsers();
 
             return View("LoginRegister");
+        }
+
+        [HttpPost]
+        public IActionResult AddUser(AllUserViewModel model)
+        {
+            if (String.IsNullOrEmpty(model.newUser.Email) || String.IsNullOrEmpty(model.newUser.Password))
+            {
+                TempData["Message"] = "Email und Password dürfen nicht leer sein.";
+            }
+            else if (UserDataAccess.emailExists(model.newUser.Email))
+            {
+                TempData["Message"] = "Email existiert bereits.";
+            }
+            else
+            {
+                UserDataAccess.insertUser(model.newUser.Email, model.newUser.Password, model.newUser.IsAdmin, false);
+                TempData["Message"] = "Benutzer hinzugefügt.";
+            }
+
+            return RedirectToAction("AllUsers");
+        }
+
+        [HttpPost]
+        public IActionResult AddWord(AllWordsViewModel model)
+        {
+            if (String.IsNullOrEmpty(model.newWord.Word) || 
+                String.IsNullOrEmpty(model.newWord.Pos) || 
+                String.IsNullOrEmpty(model.newWord.Type))
+            {
+                TempData["Message"] = "Word, Position und Typ dürfen nicht leer sein.";
+            }
+            else if (WordDataAccess.wordExists(model.newWord.Word))
+            {
+                TempData["Message"] = "Wort existiert bereits.";
+            }
+            else
+            {
+                WordDataAccess.insertWord(model.newWord.Word, model.newWord.Pos, model.newWord.Type, true);
+                TempData["Message"] = "Benutzer hinzugefügt.";
+            }
+
+            return RedirectToAction("AllWords");
         }
 
         [HttpPost]
@@ -134,7 +204,7 @@ namespace Projekt_LiterallyCounting.Controllers
 
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
             var isAdminClaim = User.FindFirst("isAdmin")?.Value;
-            bool isAdmin = isAdminClaim != null && bool.Parse(isAdminClaim);
+            bool isAdmin = isAdminClaim != null ? bool.Parse(isAdminClaim) : false;
 
             ViewBag.Email = email;
             ViewBag.Admin = isAdmin;
@@ -201,7 +271,7 @@ namespace Projekt_LiterallyCounting.Controllers
                 UserDataAccess.updateUserEmail(model.ChCredEmail, email);
                 UserDataAccess.readUsers();
 
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                //await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 await SignInUser(model.ChCredEmail);
 
                 ViewBag.Email = model.ChCredEmail;
@@ -220,9 +290,8 @@ namespace Projekt_LiterallyCounting.Controllers
                 return RedirectToAction("LoginRegister");
             }
 
-            var email = User.FindFirst(ClaimTypes.Email)?.Value;
             var isAdminClaim = User.FindFirst("isAdmin")?.Value;
-            bool isAdmin = isAdminClaim != null && bool.Parse(isAdminClaim);
+            bool isAdmin = isAdminClaim != null ? bool.Parse(isAdminClaim) : false;
 
             if(!isAdmin)
             {
@@ -230,8 +299,14 @@ namespace Projekt_LiterallyCounting.Controllers
             }
 
             List<UserViewModel> users = UserDataAccess.readUsers();
+            UserViewModel user = new UserViewModel();
 
-            return View(users);
+            AllUserViewModel viewModel = new AllUserViewModel{
+                allUsers = users,
+                newUser = user
+            };
+
+            return View(viewModel);
         }
 
         [HttpGet]
@@ -244,7 +319,7 @@ namespace Projekt_LiterallyCounting.Controllers
 
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
             var isAdminClaim = User.FindFirst("isAdmin")?.Value;
-            bool isAdmin = isAdminClaim != null && bool.Parse(isAdminClaim);
+            bool isAdmin = isAdminClaim != null ? bool.Parse(isAdminClaim) : false;
 
             if(!isAdmin)
             {
@@ -262,9 +337,8 @@ namespace Projekt_LiterallyCounting.Controllers
                 return RedirectToAction("LoginRegister");
             }
 
-            var email = User.FindFirst(ClaimTypes.Email)?.Value;
             var isAdminClaim = User.FindFirst("isAdmin")?.Value;
-            bool isAdmin = isAdminClaim != null && bool.Parse(isAdminClaim);
+            bool isAdmin = isAdminClaim != null ? bool.Parse(isAdminClaim) : false;
 
             if (!isAdmin)
             {
@@ -272,8 +346,14 @@ namespace Projekt_LiterallyCounting.Controllers
             }
 
             List<WordViewModel> words = WordDataAccess.readWords();
+            WordViewModel word = new WordViewModel();
 
-            return View(words);
+            AllWordsViewModel viewModel = new AllWordsViewModel{
+                allWords = words,
+                newWord = word
+            };
+
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -284,16 +364,57 @@ namespace Projekt_LiterallyCounting.Controllers
                 return RedirectToAction("LoginRegister");
             }
 
-            var email = User.FindFirst(ClaimTypes.Email)?.Value;
             var isAdminClaim = User.FindFirst("isAdmin")?.Value;
-            bool isAdmin = isAdminClaim != null && bool.Parse(isAdminClaim);
+            bool isAdmin = isAdminClaim != null ? bool.Parse(isAdminClaim) : false;
 
             if (!isAdmin)
             {
                 return RedirectToAction("AccountHome");
             }
-            Console.WriteLine(userEmail);
+
             UserDataAccess.deleteUser(userEmail);
+
+            return RedirectToAction("AllUsers");
+        }
+
+        [HttpPost]
+        public IActionResult DeleteWord (string wordToDelete)
+        {
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("LoginRegister");
+            }
+
+            var isAdminClaim = User.FindFirst("isAdmin")?.Value;
+            bool isAdmin = isAdminClaim != null ? bool.Parse(isAdminClaim) : false;
+
+            if (!isAdmin)
+            {
+                return RedirectToAction("AccountHome");
+            }
+
+            WordDataAccess.deleteWord(wordToDelete);
+
+            return RedirectToAction("AllWords");
+        }
+
+        [HttpPost]
+        public IActionResult UnblockUser(string userEmail)
+        {
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("LoginRegister");
+            }
+
+            var isAdminClaim = User.FindFirst("isAdmin")?.Value;
+            bool isAdmin = isAdminClaim != null ? bool.Parse(isAdminClaim) : false;
+
+            if (!isAdmin)
+            {
+                return RedirectToAction("AccountHome");
+            }
+
+            UserDataAccess.unblockUser(userEmail);
 
             return RedirectToAction("AllUsers");
         }

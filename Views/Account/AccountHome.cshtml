@@ -11,3 +11,11 @@
         <input type="submit" value="Logout" />
     </form>
 </div>
+
+<h2>Create or Join a Session</h2>
+
+<form asp-controller="Session" asp-action="GameSession" method="get">
+    <label for="sessionId">Enter Session ID:</label>
+    <input type="text" id="sessionId" name="sessionId" />
+    <button type="submit">Join Session</button>
+</form>

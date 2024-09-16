@@ -28,7 +28,7 @@ namespace MySQLiteApp
                             email TEXT NOT NULL,
                             password TEXT NOT NULL,
                             is_admin BOOLEAN NOT NULL,
-                            blocked BOOLEAN NOT NULL
+                            is_blocked BOOLEAN NOT NULL
                             )";
             cmd.ExecuteNonQuery();
 
@@ -55,13 +55,33 @@ namespace MySQLiteApp
             }
         }
 
+        public static bool userIsBlocked(string email){
+            SQLiteConnection con = createUserConnection();
+            con.Open();
+
+            using var cmd = new SQLiteCommand(con);
+
+            cmd.CommandText = "SELECT is_blocked FROM users WHERE email = @Email";
+            cmd.Parameters.AddWithValue("@Email", email);
+
+            object result = cmd.ExecuteScalar();
+            con.Close();
+
+            if (result is bool value){
+                return value;
+            }
+            else{
+                return false;
+            }
+        }
+
         public static void insertUser(string email, string password, bool admin, bool blocked)
         {
             SQLiteConnection con = createUserConnection();
             con.Open();
 
             using var cmd = new SQLiteCommand(con);
-            cmd.CommandText = $"INSERT INTO users(email, password, is_admin, blocked) VALUES( @Email, @Pw, @Admin, @Blocked)";
+            cmd.CommandText = $"INSERT INTO users(email, password, is_admin, is_blocked) VALUES( @Email, @Pw, @Admin, @Blocked)";
             cmd.Parameters.AddWithValue("@Email", email);
             cmd.Parameters.AddWithValue("@Pw", password);
             cmd.Parameters.AddWithValue("@Admin", admin);
@@ -141,7 +161,7 @@ namespace MySQLiteApp
             con.Open();
 
             using var cmd = new SQLiteCommand(con);
-            cmd.CommandText = $"Update users SET blocked = False WHERE email = @Email";
+            cmd.CommandText = $"Update users SET is_blocked = False WHERE email = @Email";
             cmd.Parameters.AddWithValue("@Email", email);
             using SQLiteDataReader rdr = cmd.ExecuteReader();
 
@@ -178,7 +198,7 @@ namespace MySQLiteApp
                     Email = rdr["email"].ToString() == null ? "" : rdr["email"].ToString(),
                     IsAdmin = Convert.ToBoolean(rdr["is_admin"]),
                     Password = rdr["password"].ToString() == null ? "" : rdr["password"].ToString(),
-                    Blocked = Convert.ToBoolean(rdr["blocked"])
+                    Blocked = Convert.ToBoolean(rdr["is_blocked"])
                 };
 
                 users.Add(user);
