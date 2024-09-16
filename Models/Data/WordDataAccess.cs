@@ -213,38 +213,51 @@ namespace MySQLiteApp
 
             cmd.CommandText = $"SELECT * FROM words WHERE id = @id LIMIT 1";
             cmd.Parameters.AddWithValue("@id", id);     
-
-            using SQLiteDataReader rdr = cmd.ExecuteReader();
-            
             WordViewModel result = new();
-            while (rdr.Read())
+            try
             {
-                WordViewModel word = new WordViewModel
+                using SQLiteDataReader rdr = cmd.ExecuteReader();
+                
+                
+                while (rdr.Read())
                 {
-                    Word = rdr["word"].ToString() == null ? "" : rdr["word"].ToString(),
-                    Pos = rdr["pos"].ToString() == null ? "" : rdr["pos"].ToString(),
-                    Type = rdr["type"].ToString() == null ? "" : rdr["type"].ToString(),
-                    Status = rdr["status"].ToString() == null ? "Original" : rdr["status"].ToString(),
-                };
+                    WordViewModel word = new WordViewModel
+                    {
+                        Word = rdr["word"].ToString() == null ? "" : rdr["word"].ToString(),
+                        Pos = rdr["pos"].ToString() == null ? "" : rdr["pos"].ToString(),
+                        Type = rdr["type"].ToString() == null ? "" : rdr["type"].ToString(),
+                        Status = rdr["status"].ToString() == null ? "Original" : rdr["status"].ToString(),
+                    };
 
-                result = word;
-            }          
+                    result = word;
+                }    
+            }  
+            catch(Exception)
+            {
+
+            }    
 
             con.Close();
             return result;
         }
-        public static int WordCount()
+        public static int IdMax()
         {
-            int count;
+            int count = 0;
             SQLiteConnection con = createWordConnection();
             con.Open();
 
             using var cmd = new SQLiteCommand(con);
-            cmd.CommandText = $"SELECT COUNT(*) FROM words";
-            using SQLiteDataReader rdr = cmd.ExecuteReader();
-            int.TryParse( rdr["COUNT(*)"].ToString(), out count);
-
-            con.Close();
+            cmd.CommandText = $"SELECT MAX(ID) FROM words";
+            using (SQLiteDataReader rdr = cmd.ExecuteReader())
+            {
+                while (rdr.Read())
+                {
+                    Console.WriteLine("TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTest");
+                    Console.WriteLine(rdr["MAX(ID)"].ToString() == null ? "" : rdr["MAX(ID)"].ToString());
+                    int.TryParse( rdr["MAX(ID)"].ToString() == null ? "" : rdr["MAX(ID)"].ToString(), out count);
+                }
+                con.Close();
+            }
             return count;
         }
     }

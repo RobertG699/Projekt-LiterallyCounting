@@ -32,7 +32,7 @@ namespace MySQLiteApp
             }
             public string GetWord()
             {
-                int maxCount = MySQLiteApp.WordDataAccess.WordCount();
+                int maxCount = MySQLiteApp.WordDataAccess.IdMax();
                 currentWord = "";
 
                 while (currentWord == "")
@@ -83,8 +83,6 @@ namespace MySQLiteApp
                 // time beinhaltet wieviel noch von den 20 sekunden übrig ist
                 // max dreimal falsch antworten pro wort
                 // eigene funktion für antwort verifikaton
-                // spiel wird erstellt, spieler joinen, spiel wird gestartet, spieler geben antworten, spieler bekommen punkte
-                // score wird erhöt, nächste runde nach countdown, letzte runde ende sieger wird gekürt.
                 if (CountDidstinctLetters(currentWord) == ans)
                 {
                     AddScore(user, time-players.Single(x=>x.username==user).fails);
