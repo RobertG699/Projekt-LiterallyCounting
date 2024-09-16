@@ -2,10 +2,14 @@
 
 <h2>Session: @ViewBag.SessionId</h2>
 
+<div>
+<button onclick="StartGame()">Spiel beginnen</button>
+</div>
+
 <!-- Random Word Display -->
-<h3><span id="round">Waiting for round ...</span></h3>
-<h3><span id="randomWord">Waiting for word...</span></h3>
-<p><span id="countdown">10</span></p>
+<h3><span id="round"></span></h3>
+<h3><span id="randomWord"></span></h3>
+<p><span id="countdown"></span></p>
 <h3><span id="gameEndMsg"></span></h3>
 
 <!-- Chat Elements -->
@@ -13,12 +17,12 @@
 
 <div>
 <input type="number" id="solutionInput" placeholder="Enter your solution" />
-<button onclick="sendNumber()">Senden</button>
+<button onclick="SendNumber()">Senden</button>
 </div>
 
 <div>
 <input type="text" id="messageInput" placeholder="Enter a message" />
-<button onclick="sendMessage()">Senden</button>
+<button onclick="SendMessage()">Senden</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
@@ -44,14 +48,20 @@
     });
 
     // Function to send a message
-    function sendMessage() {
+    function SendMessage() {
         const message = document.getElementById("messageInput").value;
         connection.invoke("SendMessage", sessionId, mail, message).catch(function (err) {
             return console.error(err.toString());
         });
     }
 
-    function sendNumber() {
+    function StartGame() {
+        connection.invoke("StartSession", sessionId).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+
+    function SendNumber() {
         const solution = document.getElementById("solutionInput").value;
         connection.invoke("SendSolution", sessionId, mail, solution).catch(function (err) {
             return console.error(err.toString());

@@ -27,6 +27,11 @@ namespace MvcLoginApp.Services
         }
 
         public async Task SendSessionState(string sessionId){
+            var state = sessions[sessionId];
+            if(state.timer == null){
+                return;
+            }
+            
             await _hubContext.Clients.Group(sessionId).SendAsync(
                         "ReceiveSessionState",
                         sessions[sessionId].selectedWord,
@@ -34,6 +39,13 @@ namespace MvcLoginApp.Services
                         sessions[sessionId].round);
         }
 
+        public void InitiateSession(string sessionId)
+        {
+            var state = new SessionState();
+
+            sessions[sessionId] = state;
+        }
+        
         public void StartSession(string sessionId)
         {
             var state = new SessionState
@@ -66,6 +78,14 @@ namespace MvcLoginApp.Services
             };
 
             sessions[sessionId] = state;
+        }
+
+        public void StopTimer(string sessionId)
+        {
+            var state = sessions[sessionId];
+            if(state.timer != null){
+                state.timer.Dispose();
+            }
         }
 
         public void StopSession(string sessionId)

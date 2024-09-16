@@ -29,8 +29,18 @@ namespace MvcLoginApp.Hubs
                 await _wordService.SendSessionState(sessionId);
             }
             else{
-                _wordService.StartSession(sessionId);
+                _wordService.InitiateSession(sessionId);
+                await _wordService.SendSessionState(sessionId);
             }
+        }
+
+        public async Task StartSession(string sessionId)
+        {
+            if(_wordService.SessionExists(sessionId)){
+                _wordService.StopTimer(sessionId);
+            }
+            
+            _wordService.StartSession(sessionId);
         }
 
         public async Task LeaveSession(string sessionId)
