@@ -1,6 +1,32 @@
-@model IEnumerable<Projekt_LiterallyCounting.Models.UserViewModel>
+@model Projekt_LiterallyCounting.Models.AllUserViewModel
+
 
 <h2>All Users</h2>
+
+<form id="addUserForm" asp-action="AddUser" method="post">
+    <div>
+        <label asp-for="newUser.Email">Email:</label>
+        <input asp-for="newUser.Email" class="form-control" />
+    </div>
+    <div>
+        <label asp-for="newUser.Password">Password:</label>
+        <input asp-for="newUser.Password" type="password" class="form-control" />
+    </div>
+    <div>
+        <label asp-for="newUser.IsAdmin">Is Admin:</label>
+        <input asp-for="newUser.IsAdmin" type="checkbox" />
+    </div>
+    <div>
+        <input type="submit" value="Benutzer Hinzufügen" />
+    </div>
+</form>
+
+<div>
+    @if (TempData["Message"] != null)
+    {
+        <p class="alert alert-success">@TempData["Message"]</p>
+    }
+</div>
 
 <table class="table table-striped">
     <thead>
@@ -13,7 +39,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (UserViewModel user in Model)
+        @foreach (UserViewModel user in Model.allUsers)
         {
             <tr>
                 <td>@user.Email</td>

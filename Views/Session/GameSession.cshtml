@@ -1,0 +1,76 @@
+@model string
+
+<h2>Session: @ViewBag.SessionId</h2>
+
+<!-- Random Word Display -->
+<h3><span id="round">Waiting for round ...</span></h3>
+<h3><span id="randomWord">Waiting for word...</span></h3>
+<p><span id="countdown">10</span></p>
+<h3><span id="gameEndMsg"></span></h3>
+
+<!-- Chat Elements -->
+<div id="messagesList"></div>
+
+<div>
+<input type="number" id="solutionInput" placeholder="Enter your solution" />
+<button onclick="sendNumber()">Senden</button>
+</div>
+
+<div>
+<input type="text" id="messageInput" placeholder="Enter a message" />
+<button onclick="sendMessage()">Senden</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
+<script>
+    const sessionId = '@ViewBag.SessionId';
+    const mail = '@ViewBag.Email'
+    const connection = new signalR.HubConnectionBuilder().withUrl("/chathub").build();
+
+    // Start the SignalR connection
+    connection.start().then(function () {
+        connection.invoke("JoinSession", sessionId);
+    }).catch(function (err) {
+        return console.error(err.toString());
+    });
+
+    // Listen for word and countdown updates from the server
+    connection.on("ReceiveSessionState", function (word, countdown, round) {
+        if (word !== null) {
+            document.getElementById("randomWord").textContent = "Das Wort: " + word;
+        }
+        document.getElementById("countdown").textContent = "Verbleibende Zeit: " + countdown;
+        document.getElementById("round").textContent = "Runde: " + round;
+    });
+
+    // Function to send a message
+    function sendMessage() {
+        const message = document.getElementById("messageInput").value;
+        connection.invoke("SendMessage", sessionId, mail, message).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+
+    function sendNumber() {
+        const solution = document.getElementById("solutionInput").value;
+        connection.invoke("SendSolution", sessionId, mail, solution).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+
+    // Handle receiving messages
+    connection.on("ReceiveMessage", function (user, message) {
+        const msg = user + ": " + message;
+        const li = document.createElement("li");
+        li.textContent = msg;
+        document.getElementById("messagesList").appendChild(li);
+    });
+
+    connection.on("ReceiveGameEndInfo", function (winner) {
+        const msg = "Congratulatons to " + winner + "!";
+        document.getElementById("gameEndMsg").textContent = msg;
+        document.getElementById("randomWord").textContent = "";
+        document.getElementById("countdown").textContent = "";
+        document.getElementById("round").textContent = "";
+    });
+</script>

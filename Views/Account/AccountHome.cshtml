@@ -1,7 +1,7 @@
 <h2>Welcome, @ViewBag.Email!</h2>
 
 <div>
-    <a asp-action="LoginRegister" asp-controller="Account" class="btn btn-primary">Neues Spiel</a>
+    <a asp-action="Game" asp-controller="Account" class="btn btn-primary">Neues Spiel</a>
     <a asp-action="LoginRegister" asp-controller="Account" class="btn btn-primary">Highscores</a>
     <a asp-action="AccountManagement" asp-controller="Account" class="btn btn-primary">Profilverwaltung</a>
     @if (ViewBag.Admin){
@@ -11,3 +11,11 @@
         <input type="submit" value="Logout" />
     </form>
 </div>
+
+<h2>Create or Join a Session</h2>
+
+<form asp-controller="Session" asp-action="GameSession" method="get">
+    <label for="sessionId">Enter Session ID:</label>
+    <input type="text" id="sessionId" name="sessionId" />
+    <button type="submit">Join Session</button>
+</form>
