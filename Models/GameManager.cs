@@ -7,12 +7,13 @@ namespace MySQLiteApp
     {
         public class Player
         {
-            internal string? username;
+            internal string username;
             internal int score;
             internal int fails;
             internal bool answerd;
             public Player ()
             {
+                username = "";
                 score = 0;
                 fails = 0;
                 answerd = false;
@@ -27,6 +28,10 @@ namespace MySQLiteApp
             private int currentRound;
             public Game ()
             {
+                for(int i = 0; i<10; i++)
+                {
+                    players[i] = new();
+                }
                 currentRound = 0;
                 currentWord ="";
             }
@@ -71,7 +76,13 @@ namespace MySQLiteApp
 
             private void AddScore(string user, int score)
             {
-                players.Single(x => x.username == user).score = players.Single(x => x.username == user).score+score;
+                foreach (Player player in players)
+                {
+                    if (player.username == user )
+                    {
+                        player.score = player.score+score;
+                    }
+                }
             }
 
             public bool Answer(string user, int ans, int time)
@@ -134,7 +145,7 @@ namespace MySQLiteApp
             }
             public Player[] RefreshRoundScoreTable()
             {
-                Array.Sort(players,delegate(Player x, Player y) { return x.score.CompareTo(y.score); });
+                Array.Sort(players,delegate(Player x, Player y) { return y.score.CompareTo(x.score); });
                 return players;
             }
         }

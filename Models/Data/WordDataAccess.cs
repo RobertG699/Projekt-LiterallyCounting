@@ -252,8 +252,8 @@ namespace MySQLiteApp
             {
                 while (rdr.Read())
                 {
-                    Console.WriteLine("TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTest");
-                    Console.WriteLine(rdr["MAX(ID)"].ToString() == null ? "" : rdr["MAX(ID)"].ToString());
+                    //Console.WriteLine("TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTest");
+                    //Console.WriteLine(rdr["MAX(ID)"].ToString() == null ? "" : rdr["MAX(ID)"].ToString());
                     int.TryParse( rdr["MAX(ID)"].ToString() == null ? "" : rdr["MAX(ID)"].ToString(), out count);
                 }
                 con.Close();

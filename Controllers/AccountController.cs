@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 
+using MySQLiteApp.Game;
+
 namespace Projekt_LiterallyCounting.Controllers
 {
     public class AccountController : Controller
@@ -54,6 +56,99 @@ namespace Projekt_LiterallyCounting.Controllers
 
             ViewBag.Email = email;
             ViewBag.Admin = isAdmin;
+            int i = 0;
+           
+           
+            //Test
+            /*
+            
+            Game game = new();
+            /*
+            bool PlayerJoin(string user)
+           
+            bool Answer(string user, int ans, int time)
+            void StartRound()
+            void StartGame()
+            int GetCurrentRound()
+            int CountDidstinctLetters(string word)
+            Player GetWinner()
+            Player[] RefreshRoundScoreTable()
+            *//*
+            game.PlayerJoin("spieler1");
+            game.PlayerJoin("spieler2");
+            game.PlayerJoin("spieler3");
+            game.PlayerJoin("spieler4");
+            game.PlayerJoin("spieler5");
+            game.PlayerJoin("spieler6");
+            game.PlayerJoin("spieler7");
+            game.PlayerJoin("spieler8");
+            game.PlayerJoin("spieler9");
+            game.PlayerJoin("spieler10");
+
+            var players = game.RefreshRoundScoreTable();
+            foreach (var player in players)
+            {
+                Console.WriteLine(player.username+" score "+player.score+" ans "+player.answerd+" fails "+player.fails);
+            }
+
+            game.StartGame();
+
+            players = game.RefreshRoundScoreTable();
+            foreach (var player in players)
+            {
+                Console.WriteLine(player.username+" score "+player.score+" ans "+player.answerd+" fails "+player.fails);
+            }
+
+            Console.WriteLine(game.GetWord());
+            Console.WriteLine( "answer: " + game.Answer("spieler5",3,15));
+            Console.WriteLine( "answer: " + game.Answer("spieler5",4,10));
+            Console.WriteLine( "answer: " + game.Answer("spieler5",5,5));
+            Console.WriteLine( "answer: " + game.Answer("spieler4",2,5));
+            Console.WriteLine( "answer: " + game.Answer("spieler4",2,5));
+            Console.WriteLine( "answer: " + game.Answer("spieler4",2,5));
+            Console.WriteLine( "answer: " + game.Answer("spieler4",2,5));
+            Console.WriteLine( "answer: " + game.Answer("spieler7",6,15));
+            Console.WriteLine( "answer: " + game.Answer("spieler8",7,15));
+
+            players = game.RefreshRoundScoreTable();
+            foreach (var player in players)
+            {
+                Console.WriteLine(player.username+" score "+player.score+" ans "+player.answerd+" fails "+player.fails);
+            }
+            Console.WriteLine("runde" +game.GetCurrentRound());
+            game.StartRound();
+
+            
+            Console.WriteLine(game.GetWord());
+            Console.WriteLine( "answer: " + game.Answer("spieler5",3,15));
+            Console.WriteLine( "answer: " + game.Answer("spieler5",4,10));
+            Console.WriteLine( "answer: " + game.Answer("spieler5",5,5));
+            Console.WriteLine( "answer: " + game.Answer("spieler4",2,5));
+            Console.WriteLine( "answer: " + game.Answer("spieler4",2,5));
+            Console.WriteLine( "answer: " + game.Answer("spieler4",2,5));
+            Console.WriteLine( "answer: " + game.Answer("spieler4",2,5));
+            Console.WriteLine( "answer: " + game.Answer("spieler7",6,15));
+            Console.WriteLine( "answer: " + game.Answer("spieler8",7,15));
+
+            players = game.RefreshRoundScoreTable();
+            foreach (var player in players)
+            {
+                Console.WriteLine(player.username+" score "+player.score+" ans "+player.answerd+" fails "+player.fails);
+            }
+            Console.WriteLine("runde" +game.GetCurrentRound());
+
+            Console.WriteLine(game.GetWinner().username);
+
+
+
+
+
+
+
+
+
+            //test ende*/
+
 
             return View("AccountHome");
         }
