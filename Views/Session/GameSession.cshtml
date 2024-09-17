@@ -12,6 +12,9 @@
 <p><span id="countdown"></span></p>
 <h3><span id="gameEndMsg"></span></h3>
 
+<!-- Player Elements -->
+<div id="playersList"></div>
+
 <!-- Chat Elements -->
 <div id="messagesList"></div>
 
@@ -33,7 +36,7 @@
 
     // Start the SignalR connection
     connection.start().then(function () {
-        connection.invoke("JoinSession", sessionId);
+        connection.invoke("JoinSession", sessionId, mail, 0);
     }).catch(function (err) {
         return console.error(err.toString());
     });
@@ -82,5 +85,16 @@
         document.getElementById("randomWord").textContent = "";
         document.getElementById("countdown").textContent = "";
         document.getElementById("round").textContent = "";
+    });
+
+    connection.on("PlayerJoined", function (user, points) {
+        const msg = user + ": " + points;
+        const li = document.createElement("li");
+        li.textContent = msg;
+
+        const messageId = "player-" + user;
+        li.setAttribute("id", messageId);
+
+        document.getElementById("playersList").appendChild(li);
     });
 </script>

@@ -159,7 +159,6 @@ namespace MySQLiteApp
 
             con.Close();
         }
-
         
         public static void deletesmalWords(){
             SQLiteConnection con = createWordConnection();

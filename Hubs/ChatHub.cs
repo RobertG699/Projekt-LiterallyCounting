@@ -22,7 +22,7 @@ namespace MvcLoginApp.Hubs
             Console.WriteLine(sessionId + " " + user + " " + solution + " ");
         }
 
-        public async Task JoinSession(string sessionId)
+        public async Task JoinSession(string sessionId, string user, int points)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
             if(_wordService.SessionExists(sessionId)){
@@ -32,6 +32,9 @@ namespace MvcLoginApp.Hubs
                 _wordService.InitiateSession(sessionId);
                 await _wordService.SendSessionState(sessionId);
             }
+
+            _wordService.AddPlayerToSession(sessionId, user);
+            await Clients.Group(sessionId).SendAsync("PlayerJoined", user, points);
         }
 
         public async Task StartSession(string sessionId)

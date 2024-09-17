@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using MvcLoginApp.Hubs;
 using System.Collections.Concurrent;
 using MySQLiteApp.Game;
+using System.Data;
 
 namespace MvcLoginApp.Services
 {
@@ -46,6 +47,13 @@ namespace MvcLoginApp.Services
             var state = new SessionState();
 
             sessions[sessionId] = state;
+        }
+
+        public void AddPlayerToSession(string sessionId, string user)
+        {
+            var state = sessions[sessionId];
+
+            state.game.PlayerJoin(user);
         }
 
         public void StartSession(string sessionId)
