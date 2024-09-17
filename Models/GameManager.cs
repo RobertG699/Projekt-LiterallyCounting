@@ -7,12 +7,13 @@ namespace MySQLiteApp
     {
         public class Player
         {
-            internal string? username;
+            internal string username;
             internal int score;
             internal int fails;
             internal bool answerd;
             public Player ()
             {
+                username = "";
                 score = 0;
                 fails = 0;
                 answerd = false;
@@ -27,12 +28,16 @@ namespace MySQLiteApp
             private int currentRound;
             public Game ()
             {
+                for(int i = 0; i<10; i++)
+                {
+                    players[i] = new();
+                }
                 currentRound = 0;
                 currentWord ="";
             }
             public string GetWord()
             {
-                int maxCount = MySQLiteApp.WordDataAccess.WordCount();
+                int maxCount = MySQLiteApp.WordDataAccess.IdMax();
                 currentWord = "";
 
                 while (currentWord == "")
@@ -71,7 +76,13 @@ namespace MySQLiteApp
 
             private void AddScore(string user, int score)
             {
-                players.Single(x => x.username == user).score = players.Single(x => x.username == user).score+score;
+                foreach (Player player in players)
+                {
+                    if (player.username == user )
+                    {
+                        player.score = player.score+score;
+                    }
+                }
             }
 
             public bool Answer(string user, int ans, int time)
@@ -83,8 +94,6 @@ namespace MySQLiteApp
                 // time beinhaltet wieviel noch von den 20 sekunden übrig ist
                 // max dreimal falsch antworten pro wort
                 // eigene funktion für antwort verifikaton
-                // spiel wird erstellt, spieler joinen, spiel wird gestartet, spieler geben antworten, spieler bekommen punkte
-                // score wird erhöt, nächste runde nach countdown, letzte runde ende sieger wird gekürt.
                 if (CountDidstinctLetters(currentWord) == ans)
                 {
                     AddScore(user, time-players.Single(x=>x.username==user).fails);
@@ -129,19 +138,14 @@ namespace MySQLiteApp
             {
                     return word.Distinct().Count();
             }
-            public void GetWinner()
+            public Player GetWinner()
             {
-                foreach (Player player in players)
-                {
-                    player.answerd = false;
-                    player.fails = 0;
-                }
-                currentRound++;
-
+                RefreshRoundScoreTable();
+                return players [0];
             }
             public Player[] RefreshRoundScoreTable()
             {
-                Array.Sort(players,delegate(Player x, Player y) { return x.score.CompareTo(y.score); });
+                Array.Sort(players,delegate(Player x, Player y) { return y.score.CompareTo(x.score); });
                 return players;
             }
         }
