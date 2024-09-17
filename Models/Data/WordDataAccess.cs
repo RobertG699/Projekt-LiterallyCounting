@@ -180,7 +180,7 @@ namespace MySQLiteApp
             con.Open();
 
             using var cmd = new SQLiteCommand(con);
-            cmd.CommandText = "SELECT * FROM words";
+            cmd.CommandText = "SELECT * FROM words LIMIT 10";
             using SQLiteDataReader rdr = cmd.ExecuteReader();
             
             while (rdr.Read())
@@ -240,9 +240,9 @@ namespace MySQLiteApp
             con.Open();
 
             using var cmd = new SQLiteCommand(con);
-            cmd.CommandText = $"SELECT COUNT(*) FROM words";
+            cmd.CommandText = $"SELECT COUNT(*) FROM words AS number";
             using SQLiteDataReader rdr = cmd.ExecuteReader();
-            int.TryParse( rdr["COUNT(*)"].ToString(), out count);
+            int.TryParse( rdr["number"].ToString(), out count);
 
             con.Close();
             return count;

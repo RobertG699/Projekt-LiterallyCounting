@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.SignalR;
 using MvcLoginApp.Hubs;
 using System.Collections.Concurrent;
+using MySQLiteApp.Game;
+
 namespace MvcLoginApp.Services
 {
     public class WordService
     {
         private readonly IHubContext<ChatHub> _hubContext;
-        private static ConcurrentDictionary<string, SessionState> sessions = new ConcurrentDictionary<string, SessionState>();
+        private static ConcurrentDictionary<string, SessionState> sessions = new ConcurrentDictionary<string, SessionState>() ;
         private static List<string> words = new List<string> { "apple", "banana", "cherry", "date", "elderberry" };
         private static Random random = new Random();
 
@@ -31,7 +33,7 @@ namespace MvcLoginApp.Services
             if(state.timer == null){
                 return;
             }
-            
+
             await _hubContext.Clients.Group(sessionId).SendAsync(
                         "ReceiveSessionState",
                         sessions[sessionId].selectedWord,
@@ -45,39 +47,37 @@ namespace MvcLoginApp.Services
 
             sessions[sessionId] = state;
         }
-        
+
         public void StartSession(string sessionId)
         {
-            var state = new SessionState
+            var state = sessions[sessionId];
+
+            state.countdownValue = 10;
+            state.selectedWord = SelectRandomWord(sessionId);
+            state.round = 1;
+            state.timer = new Timer(async _ =>
             {
-                countdownValue = 10,
-                selectedWord = SelectRandomWord(),
-                round = 1,
-                timer = new Timer(async _ =>
+                var sessionState = sessions[sessionId];
+                sessionState.countdownValue--;
+
+                if (sessionState.countdownValue == 0 && sessionState.round != 3)
                 {
-                    var sessionState = sessions[sessionId];
-                    sessionState.countdownValue--;
+                    sessionState.selectedWord = SelectRandomWord(sessionId);
+                    sessionState.countdownValue = 10;
+                    sessionState.round++;
+                }
 
-                    if (sessionState.countdownValue == 0 && sessionState.round != 3)
-                    {
-                        sessionState.selectedWord = SelectRandomWord();
-                        sessionState.countdownValue = 10;
-                        sessionState.round++;
-                    }
+                await SendSessionState(sessionId);
 
-                    await SendSessionState(sessionId);
-
-                    if(sessionState.countdownValue == 0 && sessionState.round == 3){
-                        string winner = "Tom";
-                        await _hubContext.Clients.Group(sessionId).SendAsync(
-                            "ReceiveGameEndInfo",
-                            winner);
-                        StopSession(sessionId);
-                    }
-                }, null, 0, 1000)
-            };
-
-            sessions[sessionId] = state;
+                if (sessionState.countdownValue == 0 && sessionState.round == 3)
+                {
+                    string winner = "Tom";
+                    await _hubContext.Clients.Group(sessionId).SendAsync(
+                        "ReceiveGameEndInfo",
+                        winner);
+                    StopSession(sessionId);
+                }
+            }, null, 0, 1000);
         }
 
         public void StopTimer(string sessionId)
@@ -96,18 +96,22 @@ namespace MvcLoginApp.Services
             }
         }
 
-        private string SelectRandomWord()
+        private string SelectRandomWord(string sessionId)
         {
+            //var state = sessions[sessionId];
+
+            //return state.game.GetWord();
             int randomIndex = random.Next(words.Count);
             return words[randomIndex];
         }
 
-        private class SessionState
+        public class SessionState
         {
             public int countdownValue { get; set; }
             public string selectedWord { get; set; }
             public Timer timer { get; set; }
             public int round { get; set; }
+            public Game game { get; set; } = new Game();
         }
     }
 }

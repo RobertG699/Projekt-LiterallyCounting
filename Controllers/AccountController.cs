@@ -5,16 +5,17 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
+using MySQLiteApp.Game;
 
 namespace Projekt_LiterallyCounting.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly PasswordHasher<LoginRegisterViewModel> _passwordHasher;
+        private readonly PasswordHasher<User> _passwordHasher;
 
         public AccountController()
         {
-            _passwordHasher = new PasswordHasher<LoginRegisterViewModel>(); // Initializes the password hasher
+            _passwordHasher = new PasswordHasher<User>(); // Initializes the password hasher
         }
 
         private async Task<bool> SignInUser(string email)
@@ -38,6 +39,33 @@ namespace Projekt_LiterallyCounting.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
             return true;
+        }
+
+        private void InsertUser(string userName, string userPassword, bool admin, bool blocked){
+            string passwordHash = GetHash(userName, userPassword);
+            UserDataAccess.insertUser(userName, passwordHash, admin, blocked);
+        }
+
+        private string GetHash(string userName, string userPassword){
+            User user = new User
+            {
+                Username = userName,
+                Password = userPassword
+            };
+
+            string passwordHash = _passwordHasher.HashPassword(user, user.Password);
+            return passwordHash;
+        }
+
+        private bool ValidatedUser(string userName, string userPassword){
+            User user = new User
+            {
+                Username = userName,
+                Password = userPassword
+            };
+            var result = _passwordHasher.VerifyHashedPassword(user, UserDataAccess.getPasswordHash(user.Username), user.Password);
+
+            return result == PasswordVerificationResult.Success;
         }
 
         [HttpGet]
@@ -75,17 +103,20 @@ namespace Projekt_LiterallyCounting.Controllers
 
             /*UserDataAccess.createuserUserTable();
 
-            LoginRegisterViewModel model = new LoginRegisterViewModel();
+            User user = new User();
+            string passwordHash = _passwordHasher.HashPassword(user, "123");
+
+            //LoginRegisterViewModel model = new LoginRegisterViewModel();
             //string passwordHash = _passwordHasher.HashPassword(model, "123");
 
-            UserDataAccess.insertUser("mail1", "123", false, false);
-            UserDataAccess.insertUser("mail2", "123", false, false);
-            UserDataAccess.insertUser("mail3", "123", false, true);
-            UserDataAccess.insertUser("mail4", "123", false, true);
-            UserDataAccess.insertUser("mailadmin1", "123", true, false);
-            UserDataAccess.insertUser("mailadmin2", "123", true, false);
+            UserDataAccess.insertUser("mail1", passwordHash, false, false, 100);
+            UserDataAccess.insertUser("mail2", passwordHash, false, false, 20);
+            UserDataAccess.insertUser("mail3", passwordHash, false, true, 0);
+            UserDataAccess.insertUser("mail4", passwordHash, false, true, 0);
+            UserDataAccess.insertUser("mailadmin1", passwordHash, true, false, 55);
+            UserDataAccess.insertUser("mailadmin2", passwordHash, true, false, 25);
 
-            HighScoreDataAccess.createuserHighScoreTable();
+            /*HighScoreDataAccess.createuserHighScoreTable();
             HighScoreDataAccess.insertUser("mail1", 54);
             HighScoreDataAccess.insertUser("mail2", 72);
 
@@ -118,9 +149,7 @@ namespace Projekt_LiterallyCounting.Controllers
             }
             else
             {
-                //string passwordHash = _passwordHasher.HashPassword(model, model.RegisterPassword);
-
-                UserDataAccess.insertUser(model.RegisterEmail, model.RegisterPassword, false, true);
+                InsertUser(model.RegisterEmail, model.RegisterPassword, false, true);
                 await SignInUser(model.RegisterEmail);
                 return RedirectToAction("AccountHome");
             }
@@ -131,16 +160,13 @@ namespace Projekt_LiterallyCounting.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginRegisterViewModel model)
         {
-            //string passwordHash = _passwordHasher.HashPassword(model, model.LoginPassword);
-
-            if (UserDataAccess.validatedUser(model.LoginEmail, model.LoginPassword))
+            if (ValidatedUser(model.LoginEmail, model.LoginPassword))
             {
                 await SignInUser(model.LoginEmail);
-
                 return RedirectToAction("AccountHome");
             }
+
             ViewBag.Message = "Invalid credentials. Please try again.";
-            UserDataAccess.readUsers();
 
             return View("LoginRegister");
         }
@@ -158,7 +184,7 @@ namespace Projekt_LiterallyCounting.Controllers
             }
             else
             {
-                UserDataAccess.insertUser(model.newUser.Email, model.newUser.Password, model.newUser.IsAdmin, false);
+                InsertUser(model.newUser.Email, model.newUser.Password, model.newUser.IsAdmin, false);
                 TempData["Message"] = "Benutzer hinzugefügt.";
             }
 
@@ -172,7 +198,7 @@ namespace Projekt_LiterallyCounting.Controllers
                 String.IsNullOrEmpty(model.newWord.Pos) || 
                 String.IsNullOrEmpty(model.newWord.Type))
             {
-                TempData["Message"] = "Word, Position und Typ dürfen nicht leer sein.";
+                TempData["Message"] = "Wort, Position und Typ dürfen nicht leer sein.";
             }
             else if (WordDataAccess.wordExists(model.newWord.Word))
             {
@@ -181,7 +207,7 @@ namespace Projekt_LiterallyCounting.Controllers
             else
             {
                 WordDataAccess.insertWord(model.newWord.Word, model.newWord.Pos, model.newWord.Type, true);
-                TempData["Message"] = "Benutzer hinzugefügt.";
+                TempData["Message"] = "Wort hinzugefügt.";
             }
 
             return RedirectToAction("AllWords");
@@ -222,7 +248,7 @@ namespace Projekt_LiterallyCounting.Controllers
 
             string? email = User.FindFirst(ClaimTypes.Email)?.Value;
 
-            if (email == null || !UserDataAccess.validatedUser(email, model.ChCredCurPassword))
+            if (email == null || !ValidatedUser(email, model.ChCredCurPassword))
             {
                 ViewBag.Message = "Incorrect validation.";
             }
@@ -236,8 +262,8 @@ namespace Projekt_LiterallyCounting.Controllers
             }
             else
             {
-                UserDataAccess.updateUserPassword(model.ChCredPassword, email);
-                UserDataAccess.readUsers();
+                string passwordHash = GetHash(email, model.ChCredPassword);
+                UserDataAccess.updateUserPassword(passwordHash, email);
 
                 ViewBag.Message = "Password successfully changed.";
             }
@@ -256,7 +282,7 @@ namespace Projekt_LiterallyCounting.Controllers
 
             string? email = User.FindFirst(ClaimTypes.Email)?.Value;
 
-            if (email == null || !UserDataAccess.validatedUser(email, model.ChCredCurPassword))
+            if (email == null || !ValidatedUser(email, model.ChCredCurPassword))
             {
                 ViewBag.Message = "Incorrect validation.";
                 ViewBag.Email = email;
@@ -271,7 +297,6 @@ namespace Projekt_LiterallyCounting.Controllers
                 UserDataAccess.updateUserEmail(model.ChCredEmail, email);
                 UserDataAccess.readUsers();
 
-                //await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 await SignInUser(model.ChCredEmail);
 
                 ViewBag.Email = model.ChCredEmail;
@@ -356,6 +381,25 @@ namespace Projekt_LiterallyCounting.Controllers
             return View(viewModel);
         }
 
+        [HttpGet]
+        public IActionResult Highscores()
+        {
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("LoginRegister");
+            }
+
+            List<UserViewModel> users = UserDataAccess.readUsers(true);
+            UserViewModel user = new UserViewModel();
+
+            AllUserViewModel viewModel = new AllUserViewModel{
+                allUsers = users,
+                newUser = user
+            };
+
+            return View(viewModel);
+        }
+
         [HttpPost]
         public IActionResult DeleteUser(string userEmail)
         {
@@ -419,7 +463,7 @@ namespace Projekt_LiterallyCounting.Controllers
             return RedirectToAction("AllUsers");
         }
 
-        [HttpGet]
+        /*[HttpGet]
         public IActionResult Game()
         {
             if (User.Identity == null || !User.Identity.IsAuthenticated)
@@ -430,13 +474,13 @@ namespace Projekt_LiterallyCounting.Controllers
             string word = "empty";
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
             
-            /* selecte word here
-            word = WordDataAccess.GetWord();*/
+            selecte word here
+            word = WordDataAccess.GetWord();
 
             ViewBag.Word = word;
 
             return View();
-        }
+        }*/
 
         [HttpPost]
         public IActionResult SendSolution()
