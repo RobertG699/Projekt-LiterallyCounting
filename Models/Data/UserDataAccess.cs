@@ -161,6 +161,19 @@ namespace MySQLiteApp
             con.Close();
         }
 
+        public static void updateUserPoints(string email, int points){
+            SQLiteConnection con = createUserConnection();
+            con.Open();
+
+            using var cmd = new SQLiteCommand(con);
+            cmd.CommandText = $"Update users SET points = points + @Points WHERE email = @Email";
+            cmd.Parameters.AddWithValue("@Email", email);
+            cmd.Parameters.AddWithValue("@Points", points);
+            using SQLiteDataReader rdr = cmd.ExecuteReader();
+
+            con.Close();
+        }
+
         public static void updateUserPassword(string pwNew, string email){
             SQLiteConnection con = createUserConnection();
             con.Open();
@@ -227,11 +240,6 @@ namespace MySQLiteApp
 
                 users.Add(user);
             }
-
-            /*foreach(UserViewModel user in users)
-            {
-                Console.WriteLine($"Mail: {user.Email} | Password: {user.Password} | Admin: {user.IsAdmin} | Blocked: {user.Blocked} | Points: {user.Points}");
-            }*/
 
             con.Close();
             return users;

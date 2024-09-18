@@ -2,7 +2,7 @@
 
 <h2>Session: @ViewBag.SessionId</h2>
 
-<div>
+<div id="startGameButton">
 <button onclick="StartGame()">Spiel beginnen</button>
 </div>
 
@@ -13,19 +13,22 @@
 <h3><span id="gameEndMsg"></span></h3>
 
 <!-- Player Elements -->
+<div><h3>Spieler</h3></div>
 <div id="playersList"></div>
 
 <!-- Chat Elements -->
+<div><h3>Chat</h3></div>
 <div id="messagesList"></div>
 
-<div>
-<input type="number" id="solutionInput" placeholder="Enter your solution" />
-<button onclick="SendNumber()">Senden</button>
+<div id="SendNumberButton">
+    <span id="notification"></span>
+    <input type="number" id="solutionInput" placeholder="Enter your solution" />
+    <button onclick="SendNumber()">Senden</button>
 </div>
 
 <div>
-<input type="text" id="messageInput" placeholder="Enter a message" />
-<button onclick="SendMessage()">Senden</button>
+    <input type="text" id="messageInput" placeholder="Enter a message" />
+    <button onclick="SendMessage()">Senden</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
@@ -38,10 +41,9 @@
     connection.start().then(function () {
         connection.invoke("JoinSession", sessionId, mail, 0);
     }).catch(function (err) {
-        return console.error(err.toString());
+            return console.error(err.toString());
     });
 
-    // Listen for word and countdown updates from the server
     connection.on("ReceiveSessionState", function (word, countdown, round) {
         if (word !== null) {
             document.getElementById("randomWord").textContent = "Das Wort: " + word;
@@ -50,7 +52,6 @@
         document.getElementById("round").textContent = "Runde: " + round;
     });
 
-    // Function to send a message
     function SendMessage() {
         const message = document.getElementById("messageInput").value;
         connection.invoke("SendMessage", sessionId, mail, message).catch(function (err) {
@@ -62,6 +63,7 @@
         connection.invoke("StartSession", sessionId).catch(function (err) {
             return console.error(err.toString());
         });
+        toggleNumberButton(true);
     }
 
     function SendNumber() {
@@ -71,12 +73,15 @@
         });
     }
 
-    // Handle receiving messages
     connection.on("ReceiveMessage", function (user, message) {
         const msg = user + ": " + message;
         const li = document.createElement("li");
         li.textContent = msg;
         document.getElementById("messagesList").appendChild(li);
+    });
+
+    connection.on("NotificationMessage", function (message) {
+        document.getElementById("notification").textContent = message;
     });
 
     connection.on("ReceiveGameEndInfo", function (winner) {
@@ -87,14 +92,34 @@
         document.getElementById("round").textContent = "";
     });
 
-    connection.on("PlayerJoined", function (user, points) {
-        const msg = user + ": " + points;
+    connection.on("NewPlayerEntry", function (username, score) {
+        const msg = username + ": " + score;
         const li = document.createElement("li");
         li.textContent = msg;
 
-        const messageId = "player-" + user;
+        const messageId = "player-" + username;
         li.setAttribute("id", messageId);
 
         document.getElementById("playersList").appendChild(li);
+    });
+
+    connection.on("ResetPlayerList", function () {
+        const playerList = document.getElementById("playersList");
+        playerList.innerHTML = "";
+    });
+
+    connection.on("GameInProgressMessage", function (inProgress) {
+        var numberButton = document.getElementById("SendNumberButton");
+
+        if (inProgress) {
+            numberButton.style.display = "block";
+        } else {
+            numberButton.style.display = "none";
+        }
+    });
+
+    connection.on("HideStartGameButton", function () {
+        var startGameButton = document.getElementById("startGameButton");
+        startGameButton.style.display = "none";
     });
 </script>

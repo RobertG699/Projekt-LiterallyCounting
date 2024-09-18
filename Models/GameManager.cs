@@ -1,16 +1,17 @@
 //using MySQLiteApp.WordDataAccess;
 //using Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments;
 using Projekt_LiterallyCounting.Models;
+
 namespace MySQLiteApp
 {
     namespace Game
     {
         public class Player
         {
-            internal string username;
-            internal int score;
-            internal int fails;
-            internal bool answerd;
+            public string username;
+            public int score;
+            public int fails;
+            public bool answerd;
             public Player ()
             {
                 username = "";
@@ -56,6 +57,32 @@ namespace MySQLiteApp
                 return currentWord;
             }
 
+            //Robert Glowacki
+            public List<Player> GetAllPlayers(){
+                List<Player> result = new List<Player>();
+
+                foreach(Player player in players){
+                    if(player.username != "")
+                        result.Add(player);
+                }
+
+                return result;
+            }
+
+            //Robert Glowacki
+            public Player GetPlayer(string username){
+                Player result = new Player();
+
+                foreach(Player player in players){
+                    if(player.username == username){
+                        result = player;
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
             public bool PlayerJoin(string user)
             {
                 for(int i = 0; i<10; i++)
@@ -98,25 +125,25 @@ namespace MySQLiteApp
                 {
                     AddScore(user, time-players.Single(x=>x.username==user).fails);
                     players.Single(x=>x.username==user).answerd = true;
-                    return false;
+                    RefreshRoundScoreTable();
+                    return true;
                 }
                 else 
                 {
                     players.Single(x=>x.username==user).fails++;
                 }
-                return true;
+                return false;
 
             }
             public void StartRound()
             {
-                RefreshRoundScoreTable();
+                //RefreshRoundScoreTable();
                 foreach (Player player in players)
                 {
                     player.answerd = false;
                     player.fails = 0;
                 }
                 currentRound++;
-
             }
 
 
@@ -134,13 +161,13 @@ namespace MySQLiteApp
                 return currentRound;
             }
 
-            private int CountDidstinctLetters(string word)
+            public int CountDidstinctLetters(string word)
             {
                     return word.Distinct().Count();
             }
             public Player GetWinner()
             {
-                RefreshRoundScoreTable();
+                //RefreshRoundScoreTable();
                 return players [0];
             }
             public Player[] RefreshRoundScoreTable()
