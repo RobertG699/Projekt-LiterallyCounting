@@ -1,12 +1,22 @@
-<h2>Willkommen, @ViewBag.Email!</h2>
-
-<div  align="center" vertical-align="middle">
+@* Claire *@
+<div align="center" vertical-align="middle">
+    <h2>Willkommen, @ViewBag.Email!</h2>
+    <br/>
     <div>
-        @if (ViewBag.Admin){
+        @if (ViewBag.Admin)
+        {
             <a asp-action="AdminPanel" asp-controller="Account" class="btn btn-primary">Admin Panel</a>
         }
     </div>
+    <br/>
     <div>
-        <a asp-action="Game" asp-controller="Account" class="btn btn-primary custom-btn">Spiel starten!</a>
+        @* Robert Glowacki *@
+        <h2>Session erstellen oder beiträten</h2>
+
+        <form asp-controller="Session" asp-action="GameSession" method="get">
+            <label for="sessionId">Enter Session ID:</label>
+            <input type="text" id="sessionId" name="sessionId" />
+            <button type="submit">Los!</button>
+        </form>
     </div>
 </div>

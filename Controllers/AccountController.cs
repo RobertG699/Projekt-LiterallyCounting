@@ -5,9 +5,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
-using MySQLiteApp.Game;
-
-using MySQLiteApp.Game;
 
 namespace Projekt_LiterallyCounting.Controllers
 {
