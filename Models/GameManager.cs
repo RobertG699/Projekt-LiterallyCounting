@@ -103,6 +103,10 @@ namespace MySQLiteApp
 
             private void AddScore(string user, int score)
             {
+                if (score < 1)
+                {
+                    score = 1;
+                }
                 foreach (Player player in players)
                 {
                     if (player.username == user )
@@ -123,7 +127,7 @@ namespace MySQLiteApp
                 // eigene funktion für antwort verifikaton
                 if (CountDidstinctLetters(currentWord) == ans)
                 {
-                    AddScore(user, time-players.Single(x=>x.username==user).fails);
+                    AddScore(user, time-(players.Single(x=>x.username==user).fails*5));
                     players.Single(x=>x.username==user).answerd = true;
                     RefreshRoundScoreTable();
                     return true;
