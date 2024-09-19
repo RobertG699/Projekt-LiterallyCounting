@@ -1,0 +1,22 @@
+@model Projekt_LiterallyCounting.Models.AllUserViewModel
+
+
+<h2>Highscores</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Points</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (UserViewModel user in Model.allUsers)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@(user.Points)</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -20,3 +20,8 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.custom-btn {
+  font-size: 10rem;
+  padding: 50px 150px;
+}

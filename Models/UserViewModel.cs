@@ -6,5 +6,6 @@ namespace Projekt_LiterallyCounting.Models
         public string Password { get; set; }
         public bool IsAdmin { get; set; }
         public bool Blocked { get; set; }
+        public int Points { get; set; }
     }
 }

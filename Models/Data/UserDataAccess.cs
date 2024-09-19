@@ -28,7 +28,8 @@ namespace MySQLiteApp
                             email TEXT NOT NULL,
                             password TEXT NOT NULL,
                             is_admin BOOLEAN NOT NULL,
-                            is_blocked BOOLEAN NOT NULL
+                            is_blocked BOOLEAN NOT NULL,
+                            points INTEGER NOT NULL
                             )";
             cmd.ExecuteNonQuery();
 
@@ -81,11 +82,28 @@ namespace MySQLiteApp
             con.Open();
 
             using var cmd = new SQLiteCommand(con);
-            cmd.CommandText = $"INSERT INTO users(email, password, is_admin, is_blocked) VALUES( @Email, @Pw, @Admin, @Blocked)";
+            cmd.CommandText = $"INSERT INTO users(email, password, is_admin, is_blocked, points) VALUES( @Email, @Pw, @Admin, @Blocked, 0)";
             cmd.Parameters.AddWithValue("@Email", email);
             cmd.Parameters.AddWithValue("@Pw", password);
             cmd.Parameters.AddWithValue("@Admin", admin);
             cmd.Parameters.AddWithValue("@Blocked", blocked);
+            cmd.ExecuteNonQuery();
+
+            con.Close();
+        }
+
+        public static void insertUser(string email, string password, bool admin, bool blocked, int points)
+        {
+            SQLiteConnection con = createUserConnection();
+            con.Open();
+
+            using var cmd = new SQLiteCommand(con);
+            cmd.CommandText = $"INSERT INTO users(email, password, is_admin, is_blocked, points) VALUES( @Email, @Pw, @Admin, @Blocked, @Points)";
+            cmd.Parameters.AddWithValue("@Email", email);
+            cmd.Parameters.AddWithValue("@Pw", password);
+            cmd.Parameters.AddWithValue("@Admin", admin);
+            cmd.Parameters.AddWithValue("@Blocked", blocked);
+            cmd.Parameters.AddWithValue("@Points", points);
             cmd.ExecuteNonQuery();
 
             con.Close();
@@ -110,7 +128,7 @@ namespace MySQLiteApp
             }
         }
 
-        public static bool validatedUser(string email, string password){
+        /*public static bool validatedUser(string email, string password){
             SQLiteConnection con = createUserConnection();
             con.Open();
 
@@ -128,7 +146,7 @@ namespace MySQLiteApp
                 con.Close();
                 return false;
             }
-        }
+        }*/
 
         public static void updateUserEmail(string emailNew, string email){
             SQLiteConnection con = createUserConnection();
@@ -138,6 +156,19 @@ namespace MySQLiteApp
             cmd.CommandText = $"Update users SET email = @EmailNew WHERE email = @Email";
             cmd.Parameters.AddWithValue("@EmailNew", emailNew);
             cmd.Parameters.AddWithValue("@Email", email);
+            using SQLiteDataReader rdr = cmd.ExecuteReader();
+
+            con.Close();
+        }
+
+        public static void updateUserPoints(string email, int points){
+            SQLiteConnection con = createUserConnection();
+            con.Open();
+
+            using var cmd = new SQLiteCommand(con);
+            cmd.CommandText = $"Update users SET points = points + @Points WHERE email = @Email";
+            cmd.Parameters.AddWithValue("@Email", email);
+            cmd.Parameters.AddWithValue("@Points", points);
             using SQLiteDataReader rdr = cmd.ExecuteReader();
 
             con.Close();
@@ -180,7 +211,7 @@ namespace MySQLiteApp
             con.Close();
         }
 
-        public static List<UserViewModel> readUsers()
+        public static List<UserViewModel> readUsers(bool orderByPoints = false)
         {
             List<UserViewModel> users = new List<UserViewModel>();
 
@@ -188,7 +219,12 @@ namespace MySQLiteApp
             con.Open();
 
             using var cmd = new SQLiteCommand(con);
-            cmd.CommandText = "SELECT * FROM users";
+            if(orderByPoints){
+                cmd.CommandText = "SELECT * FROM users ORDER BY points DESC LIMIT 5";
+            }
+            else{
+                cmd.CommandText = "SELECT * FROM users";
+            }
             using SQLiteDataReader rdr = cmd.ExecuteReader();
 
             while (rdr.Read())
@@ -197,20 +233,36 @@ namespace MySQLiteApp
                 {
                     Email = rdr["email"].ToString() == null ? "" : rdr["email"].ToString(),
                     IsAdmin = Convert.ToBoolean(rdr["is_admin"]),
-                    Password = rdr["password"].ToString() == null ? "" : rdr["password"].ToString(),
-                    Blocked = Convert.ToBoolean(rdr["is_blocked"])
+                    Password = "",
+                    Blocked = Convert.ToBoolean(rdr["is_blocked"]),
+                    Points = Int32.Parse(rdr["points"].ToString())
                 };
 
                 users.Add(user);
             }
 
-            foreach(UserViewModel user in users)
-            {
-                Console.WriteLine($"Mail: {user.Email} | Password: {user.Password} | Admin: {user.IsAdmin} | Blocked: {user.Blocked}");
-            }
-
             con.Close();
             return users;
+        }
+
+        public static string getPasswordHash(string email)
+        {
+            SQLiteConnection con = createUserConnection();
+            con.Open();
+
+            using var cmd = new SQLiteCommand(con);
+            cmd.CommandText = $"SELECT password FROM users WHERE email = @Email LIMIT 1";
+            cmd.Parameters.AddWithValue("@Email", email);
+
+            object result = cmd.ExecuteScalar();
+            con.Close();
+
+            if (result is string value){
+                return value;
+            }
+            else{
+                return "";
+            }
         }
     }
 }

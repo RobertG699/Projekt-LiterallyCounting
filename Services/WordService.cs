@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.SignalR;
 using MvcLoginApp.Hubs;
 using System.Collections.Concurrent;
+using MySQLiteApp.Game;
+using MySQLiteApp;
 namespace MvcLoginApp.Services
 {
     public class WordService
     {
         private readonly IHubContext<ChatHub> _hubContext;
-        private static ConcurrentDictionary<string, SessionState> sessions = new ConcurrentDictionary<string, SessionState>();
-        private static List<string> words = new List<string> { "apple", "banana", "cherry", "date", "elderberry" };
-        private static Random random = new Random();
+        private static ConcurrentDictionary<string, SessionState> sessions = new ConcurrentDictionary<string, SessionState>() ;
 
         public WordService(IHubContext<ChatHub> hubContext)
         {
@@ -27,6 +27,11 @@ namespace MvcLoginApp.Services
         }
 
         public async Task SendSessionState(string sessionId){
+            var state = sessions[sessionId];
+            if(state.timer == null){
+                return;
+            }
+
             await _hubContext.Clients.Group(sessionId).SendAsync(
                         "ReceiveSessionState",
                         sessions[sessionId].selectedWord,
@@ -34,38 +39,97 @@ namespace MvcLoginApp.Services
                         sessions[sessionId].round);
         }
 
-        public void StartSession(string sessionId)
+        public void InitiateSession(string sessionId)
         {
-            var state = new SessionState
-            {
-                countdownValue = 10,
-                selectedWord = SelectRandomWord(),
-                round = 1,
-                timer = new Timer(async _ =>
-                {
-                    var sessionState = sessions[sessionId];
-                    sessionState.countdownValue--;
-
-                    if (sessionState.countdownValue == 0 && sessionState.round != 3)
-                    {
-                        sessionState.selectedWord = SelectRandomWord();
-                        sessionState.countdownValue = 10;
-                        sessionState.round++;
-                    }
-
-                    await SendSessionState(sessionId);
-
-                    if(sessionState.countdownValue == 0 && sessionState.round == 3){
-                        string winner = "Tom";
-                        await _hubContext.Clients.Group(sessionId).SendAsync(
-                            "ReceiveGameEndInfo",
-                            winner);
-                        StopSession(sessionId);
-                    }
-                }, null, 0, 1000)
-            };
+            var state = new SessionState();
 
             sessions[sessionId] = state;
+        }
+
+        public bool GameInProgress(string sessionId)
+        {
+            var state = sessions[sessionId];
+
+            if(state.round == 0){
+                return false;
+            }
+            else{
+                return true;
+            }
+        }
+
+        public void AddPlayerToSession(string sessionId, string user)
+        {
+            var state = sessions[sessionId];
+
+            state.game.PlayerJoin(user);
+        }
+
+        public bool CheckSolution(string sessionId, string user, int solution)
+        {
+            var state = sessions[sessionId];
+            return state.game.Answer(user, solution, state.countdownValue);
+        }
+
+        public bool PlayerCanSubmitAnwser(string sessionId, string user){
+            var state = sessions[sessionId];
+
+            Player player = state.game.GetPlayer(user);
+
+            if(player.username == "" || player.answerd || player.fails >= 3){
+                return false;
+            }
+            else{
+                return true;
+            }
+        }
+
+        public List<Player> GetAllPlayers(string sessionId){
+            var state = sessions[sessionId];
+
+            return state.game.GetAllPlayers();
+        }
+
+        public void StartSession(string sessionId)
+        {
+            var state = sessions[sessionId];
+
+            state.game.StartGame();
+            state.countdownValue = 100;
+            state.selectedWord = SelectRandomWord(sessionId);
+            //Displays word AND number of letters for testing purposes
+            state.selectedWord = state.selectedWord + " " + state.game.CountDidstinctLetters(state.selectedWord);
+            state.round = 1;
+            state.timer = new Timer(async _ =>
+            {
+                var sessionState = sessions[sessionId];
+                sessionState.countdownValue--;
+
+                if (sessionState.countdownValue == 0 && sessionState.round != 3){
+                    sessionState.selectedWord = SelectRandomWord(sessionId);
+                    sessionState.countdownValue = 10;
+                    sessionState.round++;
+                    sessionState.game.StartRound();
+                }
+
+                await SendSessionState(sessionId);
+
+                if (sessionState.countdownValue == 0 && sessionState.round == 3){
+                    string winner = sessionState.game.GetWinner().username;
+                    await _hubContext.Clients.Group(sessionId).SendAsync("ReceiveGameEndInfo", winner);
+
+                    UpdatePlayerPoints(sessionId);
+                    StopSession(sessionId);
+                }
+            }, null, 0, 1000);
+        }
+
+        public void StopTimer(string sessionId)
+        {
+            var state = sessions[sessionId];
+            if(state.timer != null){
+                state.timer.Dispose();
+            }
         }
 
         public void StopSession(string sessionId)
@@ -76,18 +140,29 @@ namespace MvcLoginApp.Services
             }
         }
 
-        private string SelectRandomWord()
+        private string SelectRandomWord(string sessionId)
         {
-            int randomIndex = random.Next(words.Count);
-            return words[randomIndex];
+            var state = sessions[sessionId];
+
+            return state.game.GetWord();
         }
 
-        private class SessionState
+        private void UpdatePlayerPoints(string sessionId){
+            var state = sessions[sessionId];
+            List<Player> players = state.game.GetAllPlayers();
+
+            foreach(Player player in players){
+                UserDataAccess.updateUserPoints(player.username, player.score);
+            }
+        }
+
+        public class SessionState
         {
             public int countdownValue { get; set; }
             public string selectedWord { get; set; }
             public Timer timer { get; set; }
-            public int round { get; set; }
+            public int round { get; set; } = 0;
+            public Game game { get; set; } = new Game();
         }
     }
 }
