@@ -35,7 +35,7 @@
 <script>
     const sessionId = '@ViewBag.SessionId';
     const mail = '@ViewBag.Email'
-    const connection = new signalR.HubConnectionBuilder().withUrl("/chathub").build();
+    const connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
 
     // Start the SignalR connection
     connection.start().then(function () {

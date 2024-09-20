@@ -1,3 +1,4 @@
+//Robert//
 namespace Projekt_LiterallyCounting.Models
 {
     public class UserViewModel

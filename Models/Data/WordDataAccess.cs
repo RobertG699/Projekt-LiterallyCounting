@@ -1,3 +1,4 @@
+//Klasse: Robert, Methoden: siehe KOmmentar//
 using System.Data.SQLite;
 using Projekt_LiterallyCounting.Models;
 
@@ -5,6 +6,7 @@ namespace MySQLiteApp
 {
     public static class WordDataAccess
     {
+        //Robert//
         private static SQLiteConnection createWordConnection(){
             string db = "./Models/Data/words.db";
 
@@ -16,7 +18,7 @@ namespace MySQLiteApp
 
             return con;
         }
-
+        //Robert//
         private static bool selectNewStatus(string word, SQLiteConnection con){
             using var cmd = new SQLiteCommand(con);
 
@@ -35,7 +37,7 @@ namespace MySQLiteApp
                 return false;
             }
         }
-
+        //Robert//
         public static void createuserWordTable()
         {
             SQLiteConnection con = createWordConnection();
@@ -54,6 +56,7 @@ namespace MySQLiteApp
 
             con.Close();
         }
+        //Thomas//
         public static void recreateWordTable()
         {
             SQLiteConnection con = createWordConnection();
@@ -67,7 +70,7 @@ namespace MySQLiteApp
             con.Close();
             createuserWordTable();
         }
-
+        //Robert//
         public static void insertWord(string word, string pos, string type, bool? status = null)
         {
             SQLiteConnection con = createWordConnection();
@@ -92,7 +95,7 @@ namespace MySQLiteApp
 
             con.Close();
         }
-
+        //Robert//
         public static bool wordExists(string word){
             SQLiteConnection con = createWordConnection();
             con.Open();
@@ -111,6 +114,7 @@ namespace MySQLiteApp
                 return false;
             }
         }
+        //Thomas//
         public static bool wordExists(int id){
             SQLiteConnection con = createWordConnection();
             con.Open();
@@ -129,7 +133,7 @@ namespace MySQLiteApp
                 return false;
             }
         }
-
+        //Robert//
         public static void updateWord(string wordNew, string word){
             
             SQLiteConnection con = createWordConnection();
@@ -147,7 +151,7 @@ namespace MySQLiteApp
 
             con.Close();
         }
-
+        //Robert//
         public static void deleteWord(string word){
             SQLiteConnection con = createWordConnection();
             con.Open();
@@ -159,8 +163,7 @@ namespace MySQLiteApp
 
             con.Close();
         }
-
-        
+        //Thomas//        
         public static void deletesmalWords(){
             SQLiteConnection con = createWordConnection();
             con.Open();
@@ -171,7 +174,7 @@ namespace MySQLiteApp
 
             con.Close();
         }
-
+        //Robert//
         public static List<WordViewModel> readWords()
         {
             List<WordViewModel> words = new List<WordViewModel>();
@@ -204,6 +207,7 @@ namespace MySQLiteApp
             con.Close();
             return words;
         }
+        //Thomas//
         public static WordViewModel ReadWord(int id)
         {
             SQLiteConnection con = createWordConnection();
@@ -240,6 +244,7 @@ namespace MySQLiteApp
             con.Close();
             return result;
         }
+        //Thomas//
         public static int IdMax()
         {
             int count = 0;

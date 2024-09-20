@@ -1,3 +1,4 @@
+//Robert Glowacki//
 using System.Data.SQLite;
 using Projekt_LiterallyCounting.Models;
 

@@ -1,22 +1,23 @@
+//Robert Glowacki//
 using Microsoft.AspNetCore.SignalR;
 using MvcLoginApp.Services;
 using MySQLiteApp.Game;
 
 namespace MvcLoginApp.Hubs
 {
-    public class ChatHub : Hub
+    public class GameHub : Hub
     {
-        private readonly WordService _wordService;
+        private readonly SessionService _sessionService;
 
-        public ChatHub(WordService wordService)
+        public GameHub(SessionService sessionService)
         {
-            _wordService = wordService;
+            _sessionService = sessionService;
         }
 
         private async Task RecreatePlayerList(string sessionId){
             await Clients.Group(sessionId).SendAsync("ResetPlayerList");
 
-            List<Player> players = _wordService.GetAllPlayers(sessionId);
+            List<Player> players = _sessionService.GetAllPlayers(sessionId);
             foreach(Player player in players){
                 await Clients.Group(sessionId).SendAsync("NewPlayerEntry", player.username, player.score);
             }
@@ -31,11 +32,11 @@ namespace MvcLoginApp.Hubs
         {
             string msg;
 
-            if (!_wordService.PlayerCanSubmitAnwser(sessionId, user)){
+            if (!_sessionService.PlayerCanSubmitAnwser(sessionId, user)){
                 msg = "Bitte warte auf die nächste Runde :)";
             }
             else{
-                if (_wordService.CheckSolution(sessionId, user, Int32.Parse(solution))){
+                if (_sessionService.CheckSolution(sessionId, user, Int32.Parse(solution))){
                     msg = "Die Antwort '" + solution + "' ist richtig :)";
                     await RecreatePlayerList(sessionId);
                 }
@@ -50,36 +51,36 @@ namespace MvcLoginApp.Hubs
         public async Task JoinSession(string sessionId, string user, int points)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
-            if(_wordService.SessionExists(sessionId)){
-                await _wordService.SendSessionState(sessionId);
+            if(_sessionService.SessionExists(sessionId)){
+                await _sessionService.SendSessionState(sessionId);
                 await Clients.Caller.SendAsync("HideStartGameButton");
             }
             else{
-                _wordService.InitiateSession(sessionId);
-                await _wordService.SendSessionState(sessionId);
+                _sessionService.InitiateSession(sessionId);
+                await _sessionService.SendSessionState(sessionId);
             }
 
-            _wordService.AddPlayerToSession(sessionId, user);
+            _sessionService.AddPlayerToSession(sessionId, user);
             await RecreatePlayerList(sessionId);
-            await Clients.Group(sessionId).SendAsync("GameInProgressMessage", _wordService.GameInProgress(sessionId));
+            await Clients.Group(sessionId).SendAsync("GameInProgressMessage", _sessionService.GameInProgress(sessionId));
         }
 
         public async Task StartSession(string sessionId)
         {
-            if(_wordService.SessionExists(sessionId)){
-                _wordService.StopTimer(sessionId);
+            if(_sessionService.SessionExists(sessionId)){
+                _sessionService.StopTimer(sessionId);
             }
             
-            _wordService.StartSession(sessionId);
+            _sessionService.StartSession(sessionId);
             await Clients.Group(sessionId).SendAsync("HideStartGameButton");
-            await Clients.Group(sessionId).SendAsync("GameInProgressMessage", _wordService.GameInProgress(sessionId));
+            await Clients.Group(sessionId).SendAsync("GameInProgressMessage", _sessionService.GameInProgress(sessionId));
 
         }
 
         public async Task LeaveSession(string sessionId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, sessionId);
-            _wordService.StopSession(sessionId);
+            _sessionService.StopSession(sessionId);
         }
     }
 }

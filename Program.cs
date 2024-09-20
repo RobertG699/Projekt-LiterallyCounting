@@ -1,3 +1,4 @@
+//Robert//
 using Microsoft.AspNetCore.Authentication.Cookies;
 using MvcLoginApp.Hubs;
 using MvcLoginApp.Services;
@@ -7,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
-builder.Services.AddSingleton<WordService>();
+builder.Services.AddSingleton<SessionService>();
 
 // Add authentication services
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -26,7 +27,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.MapHub<ChatHub>("/chathub"); // Configure the route for SignalR hub
+app.MapHub<GameHub>("/gamehub"); // Configure the route for SignalR hub
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

@@ -1,3 +1,4 @@
+//Robert//
 using Microsoft.AspNetCore.SignalR;
 using MvcLoginApp.Hubs;
 using System.Collections.Concurrent;
@@ -5,12 +6,12 @@ using MySQLiteApp.Game;
 using MySQLiteApp;
 namespace MvcLoginApp.Services
 {
-    public class WordService
+    public class SessionService
     {
-        private readonly IHubContext<ChatHub> _hubContext;
+        private readonly IHubContext<GameHub> _hubContext;
         private static ConcurrentDictionary<string, SessionState> sessions = new ConcurrentDictionary<string, SessionState>() ;
 
-        public WordService(IHubContext<ChatHub> hubContext)
+        public SessionService(IHubContext<GameHub> hubContext)
         {
             _hubContext = hubContext;
         }
@@ -95,26 +96,28 @@ namespace MvcLoginApp.Services
             var state = sessions[sessionId];
 
             state.game.StartGame();
-            state.countdownValue = 100;
+            state.countdownValue = 20;
             state.selectedWord = SelectRandomWord(sessionId);
             //Displays word AND number of letters for testing purposes
-            state.selectedWord = state.selectedWord + " " + state.game.CountDidstinctLetters(state.selectedWord);
+            //state.selectedWord = state.selectedWord + " " + state.game.CountDidstinctLetters(state.selectedWord);
             state.round = 1;
             state.timer = new Timer(async _ =>
             {
                 var sessionState = sessions[sessionId];
                 sessionState.countdownValue--;
 
-                if (sessionState.countdownValue == 0 && sessionState.round != 3){
+                if (sessionState.countdownValue == 0 && sessionState.round != 20){
                     sessionState.selectedWord = SelectRandomWord(sessionId);
-                    sessionState.countdownValue = 10;
+                    //Displays word AND number of letters for testing purposes
+                    //state.selectedWord = state.selectedWord + " " + state.game.CountDidstinctLetters(state.selectedWord);
+                    sessionState.countdownValue = 20;
                     sessionState.round++;
                     sessionState.game.StartRound();
                 }
 
                 await SendSessionState(sessionId);
 
-                if (sessionState.countdownValue == 0 && sessionState.round == 3){
+                if (sessionState.countdownValue == 0 && sessionState.round == 20){
                     string winner = sessionState.game.GetWinner().username;
                     await _hubContext.Clients.Group(sessionId).SendAsync("ReceiveGameEndInfo", winner);
 

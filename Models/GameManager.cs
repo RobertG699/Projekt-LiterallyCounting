@@ -1,3 +1,4 @@
+//Robert: GetAllPlayers() und GetPlayer(), Thomas: Rest//
 //using MySQLiteApp.WordDataAccess;
 //using Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments;
 using Projekt_LiterallyCounting.Models;
@@ -56,8 +57,7 @@ namespace MySQLiteApp
                 }
                 return currentWord;
             }
-
-            //Robert Glowacki
+            //Robert Glowacki//
             public List<Player> GetAllPlayers(){
                 List<Player> result = new List<Player>();
 
@@ -69,7 +69,7 @@ namespace MySQLiteApp
                 return result;
             }
 
-            //Robert Glowacki
+            //Robert Glowacki//
             public Player GetPlayer(string username){
                 Player result = new Player();
 

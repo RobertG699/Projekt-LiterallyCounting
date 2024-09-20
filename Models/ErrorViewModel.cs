@@ -1,3 +1,4 @@
+//default implementation//
 namespace Projekt_LiterallyCounting.Models;
 
 public class ErrorViewModel

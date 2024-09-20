@@ -1,3 +1,4 @@
+//default implementation//
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Projekt_LiterallyCounting.Models;

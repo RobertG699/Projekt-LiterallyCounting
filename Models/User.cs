@@ -1,3 +1,4 @@
+//Thomas//
 namespace Projekt_LiterallyCounting.Models
 {
     public class User

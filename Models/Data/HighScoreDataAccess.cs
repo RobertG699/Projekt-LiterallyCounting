@@ -1,3 +1,4 @@
+//Robert Glowacki wird nicht verwendet//
 using System.Data.SQLite;
 using Projekt_LiterallyCounting.Models;
 
