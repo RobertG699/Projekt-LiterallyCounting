@@ -57,31 +57,6 @@ namespace MySQLiteApp
                 }
                 return currentWord;
             }
-            //Robert Glowacki//
-            public List<Player> GetAllPlayers(){
-                List<Player> result = new List<Player>();
-
-                foreach(Player player in players){
-                    if(player.username != "")
-                        result.Add(player);
-                }
-
-                return result;
-            }
-
-            //Robert Glowacki//
-            public Player GetPlayer(string username){
-                Player result = new Player();
-
-                foreach(Player player in players){
-                    if(player.username == username){
-                        result = player;
-                        break;
-                    }
-                }
-
-                return result;
-            }
 
             public bool PlayerJoin(string user)
             {
@@ -178,6 +153,32 @@ namespace MySQLiteApp
             {
                 Array.Sort(players,delegate(Player x, Player y) { return y.score.CompareTo(x.score); });
                 return players;
+            }
+
+             //Robert Glowacki//
+            public List<Player> GetAllPlayers(){
+                List<Player> result = new List<Player>();
+
+                foreach(Player player in players){
+                    if(player.username != "")
+                        result.Add(player);
+                }
+
+                return result;
+            }
+
+            //Robert Glowacki//
+            public Player GetPlayer(string username){
+                Player result = new Player();
+
+                foreach(Player player in players){
+                    if(player.username == username){
+                        result = player;
+                        break;
+                    }
+                }
+
+                return result;
             }
         }
     }

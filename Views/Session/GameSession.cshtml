@@ -37,7 +37,6 @@
     const mail = '@ViewBag.Email'
     const connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
 
-    // Start the SignalR connection
     connection.start().then(function () {
         connection.invoke("JoinSession", sessionId, mail, 0);
     }).catch(function (err) {
